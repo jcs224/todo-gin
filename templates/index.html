@@ -27,22 +27,27 @@
           serialize: function(body) {
             return m.buildQueryString(body)
           }
+        }).then(() => {
+          this.getTodos()
         })
 
         this.createTodoText = ''
       },
 
       getTodos() {
-        this.todos = [
-          {
-            text: 'Learn Go',
-            completed: false,
-          },
-          {
-            text: 'Profit',
-            completed: false
-          }
-        ]
+        m.request('/api/todos')
+          .then(response => {
+            console.log(JSON.parse(response))
+            this.todos = JSON.parse(response)
+          })
+      },
+
+      deleteTodo(id) {
+        m.request('/api/todos/'+id, {
+          method: 'delete'
+        }).then(() => {
+          this.getTodos()
+        })
       }
     }
 
@@ -103,19 +108,24 @@
                     }
                   }, 'Completed')
                 ]),
-                TodoModel.todos.filter(todo => this.currentTab == 'Completed' ? todo.completed : !todo.completed).map(todo => {
+                TodoModel.todos.filter(todo => this.currentTab == 'Completed' ? todo.Completed : !todo.Completed).map(todo => {
                   return m('.panel-block', {
                     style: 'justify-content: space-between',
+                    key: todo.ID
                   }, [
                     m('label.checkbox', [
                       m('input', {
                         type: 'checkbox',
                       }),
                       m('span', {
-                        style: todo.completed ? 'text-decoration: line-through' : null
-                      }, todo.text)
+                        style: todo.Completed ? 'text-decoration: line-through' : null
+                      }, todo.Text)
                     ]),
-                    m('button.button.is-small.is-danger', m('i.fas.fa-trash'))
+                    m('button.button.is-small.is-danger', {
+                      onclick: () => {
+                        TodoModel.deleteTodo(todo.ID)
+                      }
+                    }, m('i.fas.fa-trash'))
                   ])
                 })
               ])

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,8 +13,8 @@ import (
 
 type Todo struct {
 	gorm.Model
-	Text      string
-	Completed bool
+	Text      string `json: "text"`
+	Completed bool   `json: "completed"`
 }
 
 func main() {
@@ -27,10 +29,38 @@ func main() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 
-	r.POST("/api/todos", func(c *gin.Context) {
-		todoText := c.PostForm("text")
-		fmt.Println(todoText)
-	})
+	api := r.Group("/api")
+	{
+		api.POST("/todos", func(c *gin.Context) {
+			todoText := c.PostForm("text")
+
+			newTodo := Todo{Text: todoText, Completed: false}
+			db.Create(&newTodo)
+
+			fmt.Println(todoText)
+		})
+
+		api.GET("/todos", func(c *gin.Context) {
+			var todos []Todo
+			db.Find(&todos)
+
+			todosJSONBytes, err := json.Marshal(todos)
+			if err != nil {
+				log.Fatal("Cannot encode to json", err)
+			}
+
+			todosJSON := string(todosJSONBytes)
+
+			c.JSON(http.StatusOK, todosJSON)
+		})
+
+		api.DELETE("/todos/:id", func(c *gin.Context) {
+			var todo Todo
+			db.Where("id = ?", c.Param("id")).First(&todo)
+			db.Unscoped().Delete(&todo)
+			c.JSON(http.StatusOK, gin.H{"message": "Todo deleted successfully"})
+		})
+	}
 
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
