@@ -16,6 +16,19 @@
       createTodoText: '',
 
       createTodo() {
+        m.request('/api/todos', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: {
+            text: this.createTodoText
+          },
+          serialize: function(body) {
+            return m.buildQueryString(body)
+          }
+        })
+
         this.createTodoText = ''
       },
 

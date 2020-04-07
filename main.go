@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,11 @@ func main() {
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
+
+	r.POST("/api/todos", func(c *gin.Context) {
+		todoText := c.PostForm("text")
+		fmt.Println(todoText)
+	})
 
 	r.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
