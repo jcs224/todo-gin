@@ -4,8 +4,115 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Todo | Gin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.8.1/css/bulma.min.css" />
 </head>
 <body>
-  <h1>Hey there!</h1>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/2.0.4/mithril.min.js"></script>
+  <script>
+    let TodoModel = {
+      todos: [],
+
+      createTodoText: '',
+
+      createTodo() {
+        this.createTodoText = ''
+      },
+
+      getTodos() {
+        this.todos = [
+          {
+            text: 'Learn Go',
+            completed: false,
+          },
+          {
+            text: 'Profit',
+            completed: false
+          }
+        ]
+      }
+    }
+
+    let App = {
+      currentTab: 'Uncompleted',
+
+      oninit() {
+        TodoModel.getTodos()
+      },
+
+      view() {
+        return m('.container', [
+          m('.columns', [
+            m('.column.is-half.is-offset-one-quarter', {
+              style: 'padding: 2rem;'
+            }, [
+              m('.panel', [
+                m('h1.panel-heading', 'Todos'),
+                m('.panel-block', [
+                  m('form', {
+                    style: 'width: 100%;',
+                    onsubmit: (e) => {
+                      e.preventDefault()
+                      TodoModel.createTodo()
+                    }
+                  }, [
+                    m('.field.has-addons', [
+                      m('.control', {
+                        style: 'width: 100%;'
+                      }, [
+                        m('input.input', {
+                          placeholder: 'Add todo...',
+                          oninput: (e) => {
+                            TodoModel.createTodoText = e.target.value
+                          },
+                          value: TodoModel.createTodoText
+                        })
+                      ]),
+                      m('.control', [
+                        m('button.button.is-primary', {
+                          type: 'submit'
+                        }, m('i.fas.fa-plus'))
+                      ])
+                    ])
+                  ])
+                ]),
+                m('p.panel-tabs', [
+                  m('a', {
+                    class: this.currentTab == 'Uncompleted' ? 'is-active' : null,
+                    onclick: () => {
+                      this.currentTab = 'Uncompleted'
+                    }
+                  }, 'Uncompleted'),
+                  m('a', {
+                    class: this.currentTab == 'Completed' ? 'is-active' : null,
+                    onclick: () => {
+                      this.currentTab = 'Completed'
+                    }
+                  }, 'Completed')
+                ]),
+                TodoModel.todos.filter(todo => this.currentTab == 'Completed' ? todo.completed : !todo.completed).map(todo => {
+                  return m('.panel-block', {
+                    style: 'justify-content: space-between',
+                  }, [
+                    m('label.checkbox', [
+                      m('input', {
+                        type: 'checkbox',
+                      }),
+                      m('span', {
+                        style: todo.completed ? 'text-decoration: line-through' : null
+                      }, todo.text)
+                    ]),
+                    m('button.button.is-small.is-danger', m('i.fas.fa-trash'))
+                  ])
+                })
+              ])
+            ])
+          ])
+        ])
+      }
+    }
+
+    m.mount(document.body, App)
+  </script>
 </body>
 </html>
