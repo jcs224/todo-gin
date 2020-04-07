@@ -58,6 +58,16 @@ func main() {
 			db.Unscoped().Where("id = ?", c.Param("id")).Delete(Todo{})
 			c.JSON(http.StatusOK, gin.H{"message": "Todo deleted successfully"})
 		})
+
+		api.PUT("/todos/:id", func(c *gin.Context) {
+			var todo Todo
+			db.Where("id = ?", c.Param("id")).First(&todo)
+
+			todo.Text = c.Query("text")
+			db.Save(&todo)
+
+			c.JSON(http.StatusOK, gin.H{"message": "Todo updated successfully"})
+		})
 	}
 
 	r.GET("/", func(c *gin.Context) {
