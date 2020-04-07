@@ -13,8 +13,8 @@ import (
 
 type Todo struct {
 	gorm.Model
-	Text      string `json: "text"`
-	Completed bool   `json: "completed"`
+	Text      string
+	Completed bool
 }
 
 func main() {
@@ -55,9 +55,7 @@ func main() {
 		})
 
 		api.DELETE("/todos/:id", func(c *gin.Context) {
-			var todo Todo
-			db.Where("id = ?", c.Param("id")).First(&todo)
-			db.Unscoped().Delete(&todo)
+			db.Unscoped().Where("id = ?", c.Param("id")).Delete(Todo{})
 			c.JSON(http.StatusOK, gin.H{"message": "Todo deleted successfully"})
 		})
 	}
