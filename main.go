@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -63,7 +64,16 @@ func main() {
 			var todo Todo
 			db.Where("id = ?", c.Param("id")).First(&todo)
 
-			todo.Text = c.Query("text")
+			if c.Query("text") != "" {
+				todo.Text = c.Query("text")
+			}
+
+			if c.Query("completed") != "" {
+				completedInt, _ := strconv.Atoi(c.Query("completed"))
+				completedBool := completedInt != 0
+				todo.Completed = completedBool
+			}
+
 			db.Save(&todo)
 
 			c.JSON(http.StatusOK, gin.H{"message": "Todo updated successfully"})

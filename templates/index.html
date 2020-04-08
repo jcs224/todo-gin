@@ -15,6 +15,7 @@
 
       createTodoText: '',
       updateTodoText: '',
+      updateTodoID: null,
 
       createTodo() {
         m.request('/api/todos', {
@@ -51,11 +52,35 @@
         })
       },
 
-      changeTodoText(id, text) {
+      changeTodoText(id) {
         m.request('/api/todos/'+id, {
           method: 'put',
           params: {
-            text: text
+            text: this.updateTodoText
+          }
+        }).then(() => {
+          TodoModel.updateTodoID = null
+          TodoModel.updateTodoText = ''
+          this.getTodos()
+        })
+      },
+
+      completeTodo(id) {
+        m.request('/api/todos/'+id, {
+          method: 'put',
+          params: {
+            completed: 1,
+          }
+        }).then(() => {
+          this.getTodos()
+        })
+      },
+
+      uncompleteTodo(id) {
+        m.request('/api/todos/'+id, {
+          method: 'put',
+          params: {
+            completed: 0,
           }
         }).then(() => {
           this.getTodos()
@@ -125,19 +150,66 @@
                     style: 'justify-content: space-between',
                     key: todo.ID
                   }, [
-                    m('label.checkbox', [
+                    todo.ID == TodoModel.updateTodoID
+                    ? m('.field.has-addons', [
+                        m('p.control', [
+                          m('input.input.is-small', {
+                            value: TodoModel.updateTodoText,
+                            oninput: (e) => {
+                              TodoModel.updateTodoText = e.target.value
+                            }
+                          })
+                        ]),
+                        m('p.control', [
+                          m('button.button.is-small.is-success', {
+                            onclick: () => {
+                              TodoModel.changeTodoText(todo.ID)
+                            }
+                          }, 'Save')
+                        ]),
+                        m('p.control', [
+                          m('button.button.is-small.is-danger', {
+                            onclick: () => {
+                              TodoModel.updateTodoID = null
+                              TodoModel.updateTodoText = ''
+                            }
+                          }, 'Cancel')
+                        ])
+                      ])
+                    : m('label.checkbox', [
                       m('input', {
                         type: 'checkbox',
+                        onchange: () => {
+                          if (todo.Completed) {
+                            TodoModel.uncompleteTodo(todo.ID)
+                          } else {
+                            TodoModel.completeTodo(todo.ID)
+                          }
+                        }
                       }),
                       m('span', {
                         style: todo.Completed ? 'text-decoration: line-through' : null
                       }, todo.Text)
                     ]),
-                    m('button.button.is-small.is-danger', {
-                      onclick: () => {
-                        TodoModel.deleteTodo(todo.ID)
-                      }
-                    }, m('i.fas.fa-trash'))
+                    todo.ID == TodoModel.updateTodoID
+                    ? null
+                    : m('.field.has-addons', [
+                      m('p.control', [
+                        m('button.button.is-small.is-info', {
+                          onclick: () => {
+                            TodoModel.updateTodoText = todo.Text
+                            TodoModel.updateTodoID = todo.ID
+                          }
+                        }, m('i.fas.fa-edit'))
+                      ]),
+                      m('p.control', [
+                        m('button.button.is-small.is-danger', {
+                          onclick: () => {
+                            TodoModel.deleteTodo(todo.ID)
+                          }
+                        }, m('i.fas.fa-trash'))
+                      ])
+                    ])
                   ])
                 })
               ])
