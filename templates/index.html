@@ -185,7 +185,8 @@
                           } else {
                             TodoModel.completeTodo(todo.ID)
                           }
-                        }
+                        },
+                        checked: todo.Completed
                       }),
                       m('span', {
                         style: todo.Completed ? 'text-decoration: line-through' : null

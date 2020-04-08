@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -38,7 +37,7 @@ func main() {
 			newTodo := Todo{Text: todoText, Completed: false}
 			db.Create(&newTodo)
 
-			fmt.Println(todoText)
+			c.JSON(http.StatusOK, gin.H{"message": "Todo created successfully"})
 		})
 
 		api.GET("/todos", func(c *gin.Context) {
